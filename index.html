@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>保全技能士電気系2級課題2シミュレーター</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 30px;
+            background-color: #f8f9fa;
+        }
+        .container {
+            max-width: 650px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        h2 {
+            font-size: 1.2rem;
+            color: #333;
+            border-bottom: 2px solid #0056b3;
+            padding-bottom: 8px;
+        }
+        .section {
+            margin-bottom: 20px;
+            background: #f1f3f5;
+            padding: 15px;
+            border-radius: 6px;
+        }
+        .section h3 {
+            margin-top: 0;
+            font-size: 1rem;
+            color: #495057;
+        }
+        .btn-group {
+	display: flex;
+	gap: 10px;
+	align-items: center;
+	}
+        .btn-group button {
+            padding: 10px 18px;
+            font-size: 1rem;
+            cursor: pointer;
+            border: none;
+            border-radius: 4px;
+            color: white;
+            font-weight: bold;
+        }
+        .btn-black { background: #343a40; }
+        .btn-yellow { background: #e0a800; color: #212529; }
+        .btn-red { background: #dc3545; }
+
+	.btn-reset {
+	margin-left: auto;
+	}
+
+        .btn-group button:active { opacity: 0.7; }
+        
+        .lamp-indicators {
+            display: flex;
+            gap: 20px;
+        }
+        .lamp-item {
+            display: flex;
+            align-items: center;
+            font-weight: bold;
+        }
+   .lamp-circle {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    margin-right: 8px;
+    border: 2px solid #333;
+    transition: all 0.2s ease;
+}
+
+/* 消灯状態 */
+.wl {
+    background: #666;
+}
+
+.yl {
+    background: #6b5a00;
+}
+
+.gl {
+    background: #0d4d20;
+}
+
+/* 白ランプ点灯 */
+.wl.active {
+    background: #ffffff;
+    border-color: #ffffff;
+    box-shadow:
+        0 0 8px #ffffff,
+        0 0 16px #87cefa,
+        0 0 24px #87cefa;
+}
+
+/* 黄ランプ点灯 */
+.yl.active {
+    background: #ffc107;
+    border-color: #ffc107;
+    box-shadow:
+        0 0 8px #ffc107,
+        0 0 16px #ffca2c,
+        0 0 24px #ffca2c;
+}
+
+/* 緑ランプ点灯 */
+.gl.active {
+    background: #28a745;
+    border-color: #28a745;
+    box-shadow:
+        0 0 8px #28a745,
+        0 0 16px #4cd964,
+        0 0 24px #4cd964;
+}
+
+        .timer-status {
+            font-size: 0.95rem;
+            color: #0056b3;
+            font-weight: bold;
+        }
+        .log-box {
+            background: #212529;
+            color: #00ff66;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 0.85rem;
+            height: 120px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>保全技能士電気系2級課題2シミュレーター</h2>
+    <p style="font-size: 0.85rem; color: #666;">保全技能士2級課題2の答えです</p>
+
+    <!-- 操作パネル -->
+    <div class="section">
+        <h3>スイッチ操作 (クリック)</h3>
+        <div class="btn-group">
+            <button class="btn-black" onmousedown="setX000(true)" onmouseup="setX000(false)" ontouchstart="setX000(true)" ontouchend="setX000(false)">黒ボタン</button>
+            <button class="btn-yellow" onmousedown="setX001(true)" onmouseup="setX001(false)" ontouchstart="setX001(true)" ontouchend="setX001(false)">黄ボタン</button>
+            <button class="btn-red btn-reset" onclick="resetAll()">赤ボタン（初期化）</button>
+        </div>
+    </div>
+
+    <!-- ランプ出力状態 -->
+    <div class="section">
+        <h3>ランプ出力状態</h3>
+        <div class="lamp-indicators">
+            <div class="lamp-item"><span id="ind-wl" class="lamp-circle wl"></span> 白ランプ : <span id="txt-wl">OFF</span></div>
+            <div class="lamp-item"><span id="ind-yl" class="lamp-circle yl"></span> 黄ランプ : <span id="txt-yl">OFF</span></div>
+            <div class="lamp-item"><span id="ind-gl" class="lamp-circle gl"></span> 緑ランプ : <span id="txt-gl">OFF</span></div>
+        </div>
+    </div>
+
+    <!-- タイマー・リレー状態 -->
+    <div class="section">
+        <h3>内部リレー・タイマー状態</h3>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+            <div>M1 リレー: <span id="m1-status" style="font-weight:bold;">OFF</span></div>
+            <div>M2 リレー: <span id="m2-status" style="font-weight:bold;">OFF</span></div>
+        </div>
+        <div style="display: flex; justify-content: space-between;">
+            <div>T1 タイマー (6.0秒): <span id="t1-val" class="timer-status">6.0秒 (停止)</span></div>
+            <div>T2 タイマー (4.0秒): <span id="t2-val" class="timer-status">4.0秒 (停止)</span></div>
+        </div>
+    </div>
+
+    <!-- ログ -->
+    <div class="section">
+        <h3>動作ログ</h3>
+        <div id="log-box" class="log-box">
+            [System] 待機中。黒ボタンを押してください。
+        </div>
+    </div>
+</div>
+
+<script>
+    let x000 = false; // 黒ボタン
+    let x001 = false; // 黄ボタン
+
+    let m1 = false;
+    let m2 = false;
+
+    // K60 = 6.0秒, K40 = 4.0秒 (0.1秒単位)
+    const T1_LIMIT = 6.0;
+    const T2_LIMIT = 4.0;
+
+    let t1Time = T1_LIMIT;
+    let t1Running = false;
+    let t1Done = false; // T1 a接点
+
+    let t2Time = T2_LIMIT;
+    let t2Running = false;
+    let t2Done = false; // T2 b接点開放
+
+    function logMessage(msg) {
+        const box = document.getElementById('log-box');
+        box.innerHTML += `<div>> ${msg}</div>`;
+        box.scrollTop = box.scrollHeight;
+    }
+
+   function resetAll() {
+
+    document.getElementById('log-box').innerHTML =
+        '[System] 待機中。黒ボタンを押してください。';
+
+    x000 = false;
+    x001 = false;
+
+    m1 = false;
+    m2 = false;
+
+    t1Time = T1_LIMIT;
+    t1Running = false;
+    t1Done = false;
+
+    t2Time = T2_LIMIT;
+    t2Running = false;
+    t2Done = false;
+
+    renderUI();
+}
+
+    function setX000(val) {
+        if (x000 !== val) {
+            x000 = val;
+            if (val) logMessage("黒ボタン　ON");
+        }
+    }
+
+    function setX001(val) {
+        if (x001 !== val) {
+            x001 = val;
+            if (val) logMessage("黄ボタン　ON");
+        }
+    }
+// PLCスキャンサイクル (0.1秒)
+setInterval(() => {
+
+    // ============================
+    // T1更新
+    // ============================
+
+    if (m1) {
+
+        if (!t1Done) {
+
+            t1Running = true;
+            t1Time -= 0.1;
+
+            if (t1Time <= 0) {
+
+                t1Time = 0;
+                t1Running = false;
+                t1Done = true;
+
+                logMessage(
+                    "T1 タイムアップ (6.0秒) → T1接点ON"
+                );
+            }
+        }
+
+    } else {
+
+        t1Time = T1_LIMIT;
+        t1Running = false;
+        t1Done = false;
+    }
+
+    // ============================
+    // T2更新
+    // ============================
+
+    if (m2) {
+
+        if (!t2Done) {
+
+            t2Running = true;
+            t2Time -= 0.1;
+
+            if (t2Time <= 0) {
+
+                t2Time = 0;
+                t2Running = false;
+                t2Done = true;
+
+                logMessage(
+                    "T2 タイムアップ (4.0秒) → T2接点ON"
+                );
+            }
+        }
+
+    } else {
+
+        t2Time = T2_LIMIT;
+        t2Running = false;
+        t2Done = false;
+    }
+
+    // ============================
+    // ラダー演算
+    // LD X000
+    // OR M1
+    // ANI T2
+    // OUT M1
+    // ============================
+
+    let nextM1 =
+        (x000 || m1) &&
+        !t2Done;
+
+    // ============================
+    // LD M1
+    // LD X001
+    // OR M2
+    // ANB
+    // AND T1
+    // OUT M2
+    // ============================
+
+    let nextM2 =
+        nextM1 &&
+        (x001 || m2) &&
+        t1Done;
+
+    // 状態変化ログ
+
+    if (nextM1 !== m1) {
+
+        logMessage(
+            `M1 ${nextM1 ? 'ON' : 'OFF'}`
+        );
+    }
+
+    if (nextM2 !== m2) {
+
+        logMessage(
+            `M2 ${nextM2 ? 'ON' : 'OFF'}`
+        );
+    }
+
+    // 出力更新
+
+    m1 = nextM1;
+    m2 = nextM2;
+
+    renderUI();
+
+}, 100);
+
+    function renderUI() {
+        // 出力命令の反映
+        let y000 = m1;                    // OUT Y000 (白ランプ)
+        let y001 = m1 && !t1Done;         // ANI T1 を経由した Y001 (黄ランプ)
+        let y002 = m1 && (x001 || m2);    // OUT Y002 (緑ランプ)
+
+        document.getElementById('ind-wl').className = `lamp-circle wl ${y000 ? 'active' : ''}`;
+        document.getElementById('txt-wl').textContent = y000 ? 'ON' : 'OFF';
+
+        document.getElementById('ind-yl').className = `lamp-circle yl ${y001 ? 'active' : ''}`;
+        document.getElementById('txt-yl').textContent = y001 ? 'ON' : 'OFF';
+
+        document.getElementById('ind-gl').className = `lamp-circle gl ${y002 ? 'active' : ''}`;
+        document.getElementById('txt-gl').textContent = y002 ? 'ON' : 'OFF';
+
+        document.getElementById('m1-status').textContent = m1 ? 'ON' : 'OFF';
+        document.getElementById('m2-status').textContent = m2 ? 'ON' : 'OFF';
+
+        document.getElementById('t1-val').textContent = `${t1Time.toFixed(1)}秒 ` + (t1Done ? "(完了・a接点ON)" : t1Running ? "(計測中)" : "(待機)");
+        document.getElementById('t2-val').textContent = `${t2Time.toFixed(1)}秒 ` + (t2Done ? "(完了・b接点OPEN)" : t2Running ? "(計測中)" : "(待機)");
+    }
+</script>
+
+</body>
+</html>
